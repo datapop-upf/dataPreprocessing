@@ -19,19 +19,20 @@ url_re = re.compile(
 # url_re = re.compile(r'(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w\.-]*)*\/?\S')
 
 # Catch the RT
-rt_re = re.compile("RT")
+rt_re = re.compile("^RT", re.IGNORECASE)
 
 
 def remove_entities(txt, compiled_regex, substitute=""):
     """
     Replace mentions from the txt tweet and add them into a list to be able to keep them for later
     """
-    entities = compiled_regex.search(txt)
+    entities = compiled_regex.findall(txt)
     txt = compiled_regex.sub(substitute, txt)
-    return txt
+    print(entities)
+    return txt, entities
 
 
-def preprocess_text(sentence):
+def preprocess_tweet(sentence):
     mentions = None
     urls = None
     hashtags = None
@@ -51,11 +52,12 @@ def preprocess_text(sentence):
         # sentence = remove_entities(sentence, hashtag_re, '__HASHTAG__')
 
         hashtags = hashtag_re.findall(sentence)
-
         sentence = sentence.replace("#", "")
 
         # Remove RT symbol
-        # sentence = remove_entities(sentence, rt_re, ' ')
+        sentence, rt_status = remove_entities(sentence, rt_re, " ")
+        # Transform into boolean to return True or False if catch RT
+        rt_status = bool(rt_status)
 
         # Remove punctuations and numbers
         sentence = re.sub("[^a-zA-Z]", " ", sentence)
@@ -69,4 +71,23 @@ def preprocess_text(sentence):
         print(e)
         print("Sentence: {} - Type {}".format(sentence, type(sentence)))
         raise
-    return sentence, mentions, urls, hashtags, rt_status
+    return {
+        "tweet": sentence,
+        "mentions": mentions,
+        "urls": urls,
+        "hashtags": hashtags,
+        "rt_status": rt_status,
+    }
+
+
+def main():
+
+    print(
+        preprocess_tweet(
+            "RT: test for checking the return of @mention_1 and #Hasthags_321"
+        )
+    )
+
+
+if __name__ == "__main__":
+    main()
