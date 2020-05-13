@@ -92,7 +92,7 @@ def preprocess_tweet(
         sentence, urls = remove_entities(sentence, url_re, url_replace)
         # Remove Hashtags
         # We keep the hashtags as they can be normal words
-        if remove_hashtags is True:
+        if remove_hashtag is True:
             sentence, hashtags = remove_entities(sentence, hashtag_re, "__HASHTAG__")
         else:
             hashtags = hashtag_re.findall(sentence)
