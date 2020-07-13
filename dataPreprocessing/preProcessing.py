@@ -3,6 +3,7 @@ Pre-process a tweet text and return a cleaned version of it alongside the mentio
 """
 import re
 
+from nltk.stem import SnowballStemmer
 from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
 
@@ -26,6 +27,38 @@ to_split_re = re.compile(r"\w+")
 tokenizer = RegexpTokenizer(to_split_re)
 
 
+def return_token(txt: str, tokeniser=RegexpTokenizer(to_split_re)):
+    """
+    Use a tokeniser to return text in a list format
+    :params:
+        txt str(): text to tokenised
+        tokeniser tokenizer(): Which tokeniser is used. Default RegexpTokenizer
+    :return:
+        list() of tokens
+    """
+    return tokenizer.tokenize(txt)
+
+
+def remove_stop(txt, lang="spanish"):
+    """
+    """
+    stop_words = set(stopwords.words(lang))
+    stop_words.update([".", ",", '"', "'", ":", ";", "(", ")", "[", "]", "{", "}"])
+    stop_words.update(["de", "el", "los", "la", "las", "els"])
+    # TODO Remove all first person plural from the set
+    # stop_words.update(["MENTION".lower(), "RT".lower(), "URL".lower()])
+    if isinstance(txt, str):
+        txt = txt.split(" ")
+    try:
+        return [
+            w
+            for w in txt
+            if str(w).lower().rstrip() not in stop_words and len(str(w).rstrip()) > 0
+        ]
+    except TypeError:
+        return None
+
+
 def remove_entities(txt: str, compiled_regex: re.compile, substitute: str = ""):
     """
     Replace mentions from the txt tweet and add them into a list to be able to keep them for later
@@ -33,6 +66,24 @@ def remove_entities(txt: str, compiled_regex: re.compile, substitute: str = ""):
     entities = compiled_regex.findall(txt)
     txt = compiled_regex.sub(substitute, txt)
     return txt, entities
+
+
+def stem_text(txt: list(), lang: str = "spanish"):
+    """
+    Return a stemmed version of the input list of words
+
+    :params:
+        txt list(): of str to stem
+        lang: str(): language of the text to clean. (Default: spanish)
+    """
+    stemmer = SnowballStemmer(lang)
+    try:
+        if isinstance(txt, str):
+            return [stemmer.stem(w) for w in txt.split(" ") if len(w) > 0]
+        elif isinstance(txt, list):
+            return [stemmer.stem(w) for w in txt if len(w) > 0]
+    except TypeError:  # In case of np.NaN
+        return txt
 
 
 def preprocess_tweet(
@@ -60,6 +111,7 @@ def preprocess_tweet(
         remove_rt bool(): if removes the rt or replaces with RT (Default: False)
 
         return_dict bool() Return separated lists of a dictionary (Default: False)
+
 
     :return:
         sentences list(), mentions list(), urls list(), hashtags list(), rt_status bool()
@@ -102,7 +154,7 @@ def preprocess_tweet(
         if remove_rt is True:
             rt_replace = ""
         else:
-            remove_rt = "RT"
+            rt_replace = "RT"
         sentence, rt_status = remove_entities(sentence, rt_re, rt_replace)
         # Transform into boolean to return True or False if catch RT
         rt_status = bool(rt_status)
@@ -132,26 +184,6 @@ def preprocess_tweet(
         return sentence, mentions, urls, hashtags, rt_status
 
 
-def return_token(txt: str, tokeniser=RegexpTokenizer(to_split_re)):
-    """
-    Use a tokeniser to return text in a list format
-    :params:
-        txt str(): text to tokenised
-        tokeniser tokenizer(): Which tokeniser is used. Default RegexpTokenizer
-    :return:
-        list() of tokens
-    """
-    return tokenizer.tokenize(txt)
-
-
-def remove_stop(text, stop_words, lang="spanish"):
-    """
-    """
-    stop_words = set(stopwords.words(lang))
-    stop_words.update([".", ",", '"', "'", ":", ";", "(", ")", "[", "]", "{", "}"])
-    stop_words.update(["MENTION".lower(), "RT".lower(), "URL".lower()])
-
-
 def main():
 
     original_tweet = "RT @Toto, this is a sada ter for the @mentions of an #hastags"
@@ -161,6 +193,10 @@ def main():
     process_tweet = preprocess_tweet(original_tweet)
     print("Preprocess tweet")
     print(process_tweet)
+
+    stop_words = set(stopwords.words("spanish"))
+    print(stop_words)
+    stop_words.update([".", ",", '"', "'", ":", ";", "(", ")", "[", "]", "{", "}"])
 
 
 if __name__ == "__main__":
