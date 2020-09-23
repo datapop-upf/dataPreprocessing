@@ -3,6 +3,10 @@ Pre-process a tweet text and return a cleaned version of it alongside the mentio
 """
 import re
 
+import unidecode
+
+from gensim.utils import deaccent
+
 from nltk.stem import SnowballStemmer
 from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
@@ -27,6 +31,26 @@ to_split_re = re.compile(r"\w+")
 tokenizer = RegexpTokenizer(to_split_re)
 
 
+def remove_accent(sentence):
+    # def rmdiacritics(char):
+    #     """
+    #     Source: https://stackoverflow.com/a/15547803/3193951
+    #     Return the base character of char, by "removing" any
+    #     diacritics like accents or curls and strokes and the like.
+    #     """
+    #     desc = unidecode.name(char)
+    #     cutoff = desc.find(" WITH ")
+    #     if cutoff != -1:
+    #         desc = desc[:cutoff]
+    #         try:
+    #             char = ud.lookup(desc)
+    #         except KeyError:
+    #             pass  # removing "WITH ..." produced an invalid name
+    #     return char
+    #
+    return deaccent(sentence)
+
+
 def return_token(txt: str, tokeniser=RegexpTokenizer(to_split_re)):
     """
     Use a tokeniser to return text in a list format
@@ -44,7 +68,7 @@ def remove_stop(txt, lang="spanish"):
     """
     stop_words = set(stopwords.words(lang))
     stop_words.update([".", ",", '"', "'", ":", ";", "(", ")", "[", "]", "{", "}"])
-    stop_words.update(["de", "el", "los", "la", "las", "els"])
+    stop_words.update(["de", "el", "los", "la", "las", "els", "http", "https"])
     # TODO Remove all first person plural from the set
     # stop_words.update(["MENTION".lower(), "RT".lower(), "URL".lower()])
     if isinstance(txt, str):
@@ -129,6 +153,7 @@ def preprocess_tweet(
     try:
         # lowering all words
         sentence = sentence.lower()
+
         # Replace User mentions tags
         if remove_mention is True:
             mention_replace = ""
@@ -159,6 +184,8 @@ def preprocess_tweet(
         # Transform into boolean to return True or False if catch RT
         rt_status = bool(rt_status)
 
+        # Replace the accents with a normalised version
+        sentence = remove_accent(sentence)
         # Remove punctuations and numbers
         sentence = re.sub("[^a-zA-Z]", " ", sentence)
 
