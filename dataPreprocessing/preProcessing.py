@@ -3,8 +3,7 @@ Pre-process a tweet text and return a cleaned version of it alongside the mentio
 """
 import re
 
-import unidecode
-
+# import unidecode
 from gensim.utils import deaccent
 
 from nltk.stem import SnowballStemmer
@@ -32,26 +31,10 @@ tokenizer = RegexpTokenizer(to_split_re)
 
 
 def remove_accent(sentence):
-    # def rmdiacritics(char):
-    #     """
-    #     Source: https://stackoverflow.com/a/15547803/3193951
-    #     Return the base character of char, by "removing" any
-    #     diacritics like accents or curls and strokes and the like.
-    #     """
-    #     desc = unidecode.name(char)
-    #     cutoff = desc.find(" WITH ")
-    #     if cutoff != -1:
-    #         desc = desc[:cutoff]
-    #         try:
-    #             char = ud.lookup(desc)
-    #         except KeyError:
-    #             pass  # removing "WITH ..." produced an invalid name
-    #     return char
-    #
     return deaccent(sentence)
 
 
-def return_token(txt: str, tokeniser=RegexpTokenizer(to_split_re)):
+def return_token(txt: str, tokeniser=tokenizer):
     """
     Use a tokeniser to return text in a list format
     :params:
@@ -83,13 +66,78 @@ def remove_stop(txt, lang="spanish"):
         return None
 
 
-def remove_entities(txt: str, compiled_regex: re.compile, substitute: str = ""):
+def remove_mentions_from_txt(txt, remove_mention, mention_re):
+    if remove_mention is True:
+        mention_replace = ""
+    else:
+        mention_replace = "__MENTION__"
+    txt, mentions = remove_compiled_regex(txt, mention_re, mention_replace)
+    return txt, mentions
+
+
+def remove_urls_from_txt(txt, remove_url, url_re):
+
+    if remove_url is True:
+        url_replace = ""
+    else:
+        url_replace = "__URL__"
+    txt, urls = remove_compiled_regex(txt, url_re, url_replace)
+    return txt, urls
+
+
+def remove_hashtags_from_txt(txt, remove_hashtag, hashtag_re):
+
+    if remove_hashtag is True:
+        txt, hashtags = remove_compiled_regex(txt, hashtag_re, "__HASHTAG__")
+    else:
+        hashtags = hashtag_re.findall(txt)
+        txt = txt.replace("#", "")
+
+
+def remove_rt_from_txt(txt, remove_rt, rt_re):
+
+    if remove_rt is True:
+        rt_replace = ""
+    else:
+        rt_replace = "RT"
+    txt, rt_status = remove_compiled_regex(txt, rt_re, rt_replace)
+    # Transform into boolean to return True or False if catch RT
+    rt_status = bool(rt_status)
+
+    return txt, rt_status
+
+
+def remove_compiled_regex(txt: str, compiled_regex: re.compile, substitute: str = ""):
     """
-    Replace mentions from the txt tweet and add them into a list to be able to keep them for later
+    Search for the compiled regex in the txt and either replace it with the substitute or remove it
     """
     entities = compiled_regex.findall(txt)
     txt = compiled_regex.sub(substitute, txt)
     return txt, entities
+
+
+def remove_entities(
+    txt: str,
+    remove_hashtag: bool = False,
+    remove_url: bool = False,
+    remove_mention: bool = False,
+    remove_rt: bool = False,
+):
+
+    # Replace User mentions tags
+    txt, mentions_lists = remove_mentions_from_txt(txt, remove_mention, mention_re)
+
+    # Remove URL
+    txt, ulrs_lists, = remove_urls_from_txt(txt, remove_url, url_re)
+
+    # Remove Hashtags
+    # We keep the hashtags as they can be normal words
+    txt, hashtags_list = remove_hashtags_from_txt(txt, remove_hashtag, hashtag_re)
+
+    # Remove RT symbol
+    txt, rt_bool = remove_rt_from_txt(txt, remove_rt, rt_re)
+
+    return txt, mentions_lists, ulrs_lists, hashtags_list, rt_bool
 
 
 def stem_text(txt: list(), lang: str = "spanish"):
@@ -154,43 +202,23 @@ def preprocess_tweet(
         # lowering all words
         sentence = sentence.lower()
 
-        # Replace User mentions tags
-        if remove_mention is True:
-            mention_replace = ""
-        else:
-            mention_replace = "__MENTION__"
-        sentence, mentions = remove_entities(sentence, mention_re, mention_replace)
-
-        # Remove URL
-        if remove_url is True:
-            url_replace = ""
-        else:
-            url_replace = "__URL__"
-        sentence, urls = remove_entities(sentence, url_re, url_replace)
-        # Remove Hashtags
-        # We keep the hashtags as they can be normal words
-        if remove_hashtag is True:
-            sentence, hashtags = remove_entities(sentence, hashtag_re, "__HASHTAG__")
-        else:
-            hashtags = hashtag_re.findall(sentence)
-            sentence = sentence.replace("#", "")
-
-        # Remove RT symbol
-        if remove_rt is True:
-            rt_replace = ""
-        else:
-            rt_replace = "RT"
-        sentence, rt_status = remove_entities(sentence, rt_re, rt_replace)
-        # Transform into boolean to return True or False if catch RT
-        rt_status = bool(rt_status)
-
         # Replace the accents with a normalised version
         sentence = remove_accent(sentence)
         # Remove punctuations and numbers
         sentence = re.sub("[^a-zA-Z]", " ", sentence)
 
+        # remove entities and get the list of the removed object if need future parsing
+        (
+            sentence,
+            mentions_lists,
+            urls_lists,
+            hashtags_list,
+            rt_status,
+        ) = remove_entities(
+            sentence, remove_hashtag, remove_url, remove_mention, remove_rt
+        )
         # Single character removal
-        sentence = re.sub(r"\s+[a-zA-Z]\s+", " ", sentence)
+        # sentence = re.sub(r"\s+[a-zA-Z]\s+", " ", sentence)
 
         # Removing multiple spaces
         sentence = " ".join(sentence.split())
