@@ -3,6 +3,8 @@ Pre-process a tweet text and return a cleaned version of it alongside the mentio
 """
 import re
 
+import emot
+
 # import unidecode
 from gensim.utils import deaccent
 
@@ -66,6 +68,18 @@ def remove_stop(txt, lang="spanish"):
         return None
 
 
+def remove_emoticons(txt, remove_emo):
+
+    result = emot.emoticons(txt)
+
+    if remove_emo is True:
+        to_replace = ""
+    else:
+        to_replace = None
+    print(result)
+    return txt
+
+
 def remove_mentions_from_txt(txt, remove_mention, mention_re):
     if remove_mention is True:
         mention_replace = ""
@@ -92,6 +106,7 @@ def remove_hashtags_from_txt(txt, remove_hashtag, hashtag_re):
     else:
         hashtags = hashtag_re.findall(txt)
         txt = txt.replace("#", "")
+    return txt, hashtags
 
 
 def remove_rt_from_txt(txt, remove_rt, rt_re):
@@ -128,7 +143,7 @@ def remove_entities(
     txt, mentions_lists = remove_mentions_from_txt(txt, remove_mention, mention_re)
 
     # Remove URL
-    txt, ulrs_lists, = remove_urls_from_txt(txt, remove_url, url_re)
+    txt, ulrs_lists = remove_urls_from_txt(txt, remove_url, url_re)
 
     # Remove Hashtags
     # We keep the hashtags as they can be normal words
@@ -164,6 +179,7 @@ def preprocess_tweet(
     remove_url: bool = False,
     remove_mention: bool = False,
     remove_rt: bool = False,
+    remove_emo: bool = False,
     return_dict: bool = False,
 ):
     """
@@ -181,6 +197,8 @@ def preprocess_tweet(
         remove_mention bool(): if removes the mentions or replaces with MENTION (Default: False)
 
         remove_rt bool(): if removes the rt or replaces with RT (Default: False)
+
+        remove_emo bool(): if remove the emoticon or replaces with RT (Default: False)
 
         return_dict bool() Return separated lists of a dictionary (Default: False)
 
@@ -202,11 +220,6 @@ def preprocess_tweet(
         # lowering all words
         sentence = sentence.lower()
 
-        # Replace the accents with a normalised version
-        sentence = remove_accent(sentence)
-        # Remove punctuations and numbers
-        sentence = re.sub("[^a-zA-Z]", " ", sentence)
-
         # remove entities and get the list of the removed object if need future parsing
         (
             sentence,
@@ -219,6 +232,15 @@ def preprocess_tweet(
         )
         # Single character removal
         # sentence = re.sub(r"\s+[a-zA-Z]\s+", " ", sentence)
+
+        # Replace the accents with a normalised version
+        sentence = remove_accent(sentence)
+
+        # Replace emoticons and emojis
+        # sentence = remove_emoticons(sentence, remove_emo)
+
+        # Remove punctuations and numbers
+        sentence = re.sub("[^a-zA-Z]", " ", sentence)
 
         # Removing multiple spaces
         sentence = " ".join(sentence.split())
