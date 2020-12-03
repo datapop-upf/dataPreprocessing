@@ -170,9 +170,6 @@ def remove_entities(
     # Remove RT symbol
     txt, rt_bool = remove_rt_from_txt(txt, remove_rt, rt_re)
 
-    # Replace emoticons and emojis
-    txt = converted_emoticons(txt)
-    txt = converted_emojis(txt)
 
     return txt, mentions_lists, ulrs_lists, hashtags_list, rt_bool
 
@@ -201,7 +198,8 @@ def preprocess_tweet(
     remove_url: bool = False,
     remove_mention: bool = False,
     remove_rt: bool = False,
-    remove_emo: bool = False,
+    remove_emoticon: bool = True,
+    remove_emoji: bool = True,
     return_dict: bool = False,
 ):
     """
@@ -220,7 +218,8 @@ def preprocess_tweet(
 
         remove_rt bool(): if removes the rt or replaces with RT (Default: False)
 
-        remove_emo bool(): if remove the emoticon or replaces with RT (Default: False)
+        remove_emoticon bool(): if remove the emoticons and replace with their value (Default: True)
+        remove_emoji bool(): if remove the emojis and replace with their value (Default: True)
 
         return_dict bool() Return separated lists of a dictionary (Default: False)
 
@@ -258,8 +257,14 @@ def preprocess_tweet(
         # Replace the accents with a normalised version
         sentence = remove_accent(sentence)
 
-        # Replace emoticons and emojis
-        # sentence = remove_emoticons(sentence, remove_emo)
+        # Replace emoticon if true
+        if remove_emoticon:
+            sentence = convert_emoticons(sentence)
+
+        # Replace emojis if True
+        if remove_emoji:
+            sentence = convert_emojis(sentence)
+
 
         # Remove punctuations and numbers
         sentence = re.sub("[^a-zA-Z]", " ", sentence)
