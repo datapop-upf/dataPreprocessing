@@ -38,7 +38,7 @@ def remove_accent(sentence):
 
 def return_token(txt: str, tokeniser=tokenizer):
     """
-    Use a tokeniser to return text in a list format
+    Use a tokenizer to return text in a list format
     :params:
         txt str(): text to tokenised
         tokeniser tokenizer(): Which tokeniser is used. Default RegexpTokenizer
@@ -67,17 +67,35 @@ def remove_stop(txt, lang="spanish"):
     except TypeError:
         return None
 
+def convert_emojis(text):
+    def replace_emoji(txt, indexes, replacements):
+        for (index, replacement) in zip(indexes, replacements):
+            txt[index] = replacement
+        return txt
 
-def remove_emoticons(txt, remove_emo):
+    converted_emojis = emot.emoji(text)
+    if converted_emojis['flag'] is True:
+        text = [x for x in text]
+        idx_emojis = [location[0] for location in converted_emojis['location']] # Get the first el as it is a single car
+        text = replace_emoji(text,idx_emojis,  converted_emojis['mean'], )
+        text = ''.join(text)
+    return text
 
-    result = emot.emoticons(txt)
 
-    if remove_emo is True:
-        to_replace = ""
-    else:
-        to_replace = None
-    print(result)
-    return txt
+def convert_emoticons(text):
+    def replace_emoticons(l, id_to_del, replacements):
+        for idx, replacement in zip(sorted(id_to_del, reverse=True), sorted(replacements, reverse=True)):
+            del(l[idx[0]: idx[-1]])
+            l[idx[0]: idx[0]] =  [x for x in replacement]
+        return l
+
+    converted_emoticons = emot.emoticons(text)
+    if converted_emoticons['flag'] is True:
+        text = [x for x in text]
+        text = replace_emoticons(text, converted_emoticons['location'], converted_emoticons['mean'])
+        text = ''.join(text)
+    return text
+
 
 
 def remove_mentions_from_txt(txt, remove_mention, mention_re):
@@ -151,6 +169,10 @@ def remove_entities(
 
     # Remove RT symbol
     txt, rt_bool = remove_rt_from_txt(txt, remove_rt, rt_re)
+
+    # Replace emoticons and emojis
+    txt = converted_emoticons(txt)
+    txt = converted_emojis(txt)
 
     return txt, mentions_lists, ulrs_lists, hashtags_list, rt_bool
 
