@@ -90,6 +90,7 @@ def convert_emoticons(text):
         return l
 
     converted_emoticons = emot.emoticons(text)
+    print(converted_emoticons)
     if converted_emoticons['flag'] is True:
         text = [x for x in text]
         text = replace_emoticons(text, converted_emoticons['location'], converted_emoticons['mean'])
@@ -192,7 +193,7 @@ def stem_text(txt: list(), lang: str = "spanish"):
         return txt
 
 
-def preprocess_tweet(
+def preprocess_text(
     sentence: str,
     remove_hashtag: bool = False,
     remove_url: bool = False,
@@ -298,9 +299,12 @@ def main():
     print("Preprocess tweet")
     print(process_tweet)
 
-    stop_words = set(stopwords.words("spanish"))
-    print(stop_words)
-    stop_words.update([".", ",", '"', "'", ":", ";", "(", ")", "[", "]", "{", "}"])
+    second_tweet = '__MENTION__ __MENTION__ enserio cuando habeis dicho que los froot loops estan malos me ha dolido...'
+    print("Original Tweet")
+    print(second_tweet)
+    process_tweet = preprocess_tweet(second_tweet)
+    print("Preprocess tweet")
+    print(process_tweet)
 
 
 if __name__ == "__main__":
