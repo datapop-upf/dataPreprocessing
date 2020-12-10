@@ -9,14 +9,13 @@ import datetime
 import itertools
 
 import pytz
+import fasttext
 import numpy as np
 import pandas as pd
 
 from tqdm import tqdm
 from dataPreprocessing import preProcessingText
 from dateutil.relativedelta import relativedelta
-
-import fasttext
 
 logging.basicConfig(format="%(asctime)s %(message)s", level=logging.INFO)
 
@@ -117,7 +116,6 @@ def process_tweet(tweet, lang_model=None):
         remove_mention=True,
         remove_url=True,
         remove_rt=True,
-        remove_emo=True,
         return_dict=True,
     )
     tweet_to_return["txt_wo_entities"] = remove_entities["tweet"]
