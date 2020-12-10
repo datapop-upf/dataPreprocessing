@@ -134,7 +134,7 @@ def process_tweet(tweet, lang_model=None):
         tweet_to_return["lang_proba"] = float(
             tweet_to_return["lang_proba"]
         )  # Need to transform float32 into str for json
-    tweet_to_return["token_txt"] = preProcessing.return_token(
+    tweet_to_return["token_txt"] = preProcessingText.return_token(
         tweet_to_return["txt_wo_entities"]
     )
     # tweet_to_return["clean_text"] = preProcessing.remove_stop(
