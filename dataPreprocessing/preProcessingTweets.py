@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 
 from tqdm import tqdm
-from dataPreprocessing import preProcessing
+from dataPreprocessing import preProcessingText
 from dateutil.relativedelta import relativedelta
 
 import fasttext
@@ -112,7 +112,7 @@ def process_tweet(tweet, lang_model=None):
 
     # tweet_to_return["created_at"] = str(tweet["created_at"])
 
-    remove_entities = preProcessing.preprocess_text(
+    remove_entities = preProcessingText.preprocess_text(
         tweet_to_return["text"],
         remove_mention=True,
         remove_url=True,
