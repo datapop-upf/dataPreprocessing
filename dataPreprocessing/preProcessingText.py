@@ -49,8 +49,7 @@ def return_token(txt: str, tokeniser=tokenizer):
 
 
 def remove_stop(txt, lang="spanish"):
-    """
-    """
+    """"""
     stop_words = set(stopwords.words(lang))
     stop_words.update([".", ",", '"', "'", ":", ";", "(", ")", "[", "]", "{", "}"])
     stop_words.update(["de", "el", "los", "la", "las", "els", "http", "https"])
@@ -67,6 +66,7 @@ def remove_stop(txt, lang="spanish"):
     except TypeError:
         return None
 
+
 def convert_emojis(text):
     def replace_emoji(txt, indexes, replacements):
         for (index, replacement) in zip(indexes, replacements):
@@ -74,29 +74,37 @@ def convert_emojis(text):
         return txt
 
     converted_emojis = emot.emoji(text)
-    if converted_emojis['flag'] is True:
+    if converted_emojis["flag"] is True:
         text = [x for x in text]
-        idx_emojis = [location[0] for location in converted_emojis['location']] # Get the first el as it is a single car
-        text = replace_emoji(text,idx_emojis,  converted_emojis['mean'], )
-        text = ''.join(text)
+        idx_emojis = [
+            location[0] for location in converted_emojis["location"]
+        ]  # Get the first el as it is a single car
+        text = replace_emoji(
+            text,
+            idx_emojis,
+            converted_emojis["mean"],
+        )
+        text = "".join(text)
     return text
 
 
 def convert_emoticons(text):
     def replace_emoticons(l, id_to_del, replacements):
-        for idx, replacement in zip(sorted(id_to_del, reverse=True), sorted(replacements, reverse=True)):
-            del(l[idx[0]: idx[-1]])
-            l[idx[0]: idx[0]] =  [x for x in replacement]
+        for idx, replacement in zip(
+            sorted(id_to_del, reverse=True), sorted(replacements, reverse=True)
+        ):
+            del l[idx[0] : idx[-1]]
+            l[idx[0] : idx[0]] = [x for x in replacement]
         return l
 
     converted_emoticons = emot.emoticons(text)
-    print(converted_emoticons)
-    if converted_emoticons['flag'] is True:
+    if converted_emoticons["flag"] is True:
         text = [x for x in text]
-        text = replace_emoticons(text, converted_emoticons['location'], converted_emoticons['mean'])
-        text = ''.join(text)
+        text = replace_emoticons(
+            text, converted_emoticons["location"], converted_emoticons["mean"]
+        )
+        text = "".join(text)
     return text
-
 
 
 def remove_mentions_from_txt(txt, remove_mention, mention_re):
@@ -170,7 +178,6 @@ def remove_entities(
 
     # Remove RT symbol
     txt, rt_bool = remove_rt_from_txt(txt, remove_rt, rt_re)
-
 
     return txt, mentions_lists, ulrs_lists, hashtags_list, rt_bool
 
@@ -266,7 +273,6 @@ def preprocess_text(
         if remove_emoji:
             sentence = convert_emojis(sentence)
 
-
         # Remove punctuations and numbers
         sentence = re.sub("[^a-zA-Z]", " ", sentence)
 
@@ -299,7 +305,7 @@ def main():
     print("Preprocess tweet")
     print(process_tweet)
 
-    second_tweet = '__MENTION__ __MENTION__ enserio cuando habeis dicho que los froot loops estan malos me ha dolido...'
+    second_tweet = "__MENTION__ __MENTION__ enserio cuando habeis dicho que los froot loops estan malos me ha dolido..."
     print("Original Tweet")
     print(second_tweet)
     process_tweet = preprocess_tweet(second_tweet)
