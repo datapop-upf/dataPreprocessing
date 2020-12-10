@@ -93,9 +93,11 @@ def process_tweet(tweet, lang_model=None):
     tweet_to_return["screen_name"] = tweet["user"]["screen_name"].lower()
 
     tweet_to_return["user_mentions"] = [
-        x["screen_name"] for x in tweet["entities"]["user_mentions"]
+        x["screen_name"].lower() for x in tweet["entities"]["user_mentions"]
     ]
-    tweet_to_return["hashtags"] = [x["text"] for x in tweet["entities"]["hashtags"]]
+    tweet_to_return['user_mentions_ids'] =  [x['id'] for x in tweet['entities']['user_mentions']]
+
+    tweet_to_return["hashtags"] = [x["text"].lower() for x in tweet["entities"]["hashtags"]]
 
     tweet_to_return["urls"] = [x["expanded_url"] for x in tweet["entities"]["urls"]]
 
