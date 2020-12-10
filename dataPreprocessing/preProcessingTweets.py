@@ -8,24 +8,25 @@ import sqlite3
 import datetime
 import itertools
 
+import pytz
 import numpy as np
+import pandas as pd
 
 from tqdm import tqdm
 from dataPreprocessing import preProcessing
-
-import pytz
-import fasttext
-import pandas as pd
-
-from dotenv import load_dotenv
 from dateutil.relativedelta import relativedelta
+
+import fasttext
 
 logging.basicConfig(format="%(asctime)s %(message)s", level=logging.INFO)
 
-load_dotenv()
 
+def get_lang(txt, lang_model_path=None):
 
-def get_lang(txt, lang_detector):
+    if lang_model_path is None:
+        lang_model_path = "./models/lid.176.bin"
+
+    lang_model = fasttext.load_model(lang_model_path)
     try:
         label, proba = lang_detector(txt)
 
@@ -95,9 +96,13 @@ def process_tweet(tweet, lang_model=None):
     tweet_to_return["user_mentions"] = [
         x["screen_name"].lower() for x in tweet["entities"]["user_mentions"]
     ]
-    tweet_to_return['user_mentions_ids'] =  [x['id'] for x in tweet['entities']['user_mentions']]
+    tweet_to_return["user_mentions_ids"] = [
+        x["id"] for x in tweet["entities"]["user_mentions"]
+    ]
 
-    tweet_to_return["hashtags"] = [x["text"].lower() for x in tweet["entities"]["hashtags"]]
+    tweet_to_return["hashtags"] = [
+        x["text"].lower() for x in tweet["entities"]["hashtags"]
+    ]
 
     tweet_to_return["urls"] = [x["expanded_url"] for x in tweet["entities"]["urls"]]
 
@@ -117,7 +122,7 @@ def process_tweet(tweet, lang_model=None):
     )
     tweet_to_return["txt_wo_entities"] = remove_entities["tweet"]
 
-    #tweet_to_return["txt_wo_entities"] = tweet_to_return["clean_text"]
+    # tweet_to_return["txt_wo_entities"] = tweet_to_return["clean_text"]
     # Check if the rt has not been set up as true earlier
     if tweet_to_return["rt_status"] is False:
         tweet_to_return["rt_status"] = remove_entities["rt_status"]
@@ -134,12 +139,12 @@ def process_tweet(tweet, lang_model=None):
     tweet_to_return["token_txt"] = preProcessing.return_token(
         tweet_to_return["txt_wo_entities"]
     )
-   # tweet_to_return["clean_text"] = preProcessing.remove_stop(
-   #     tweet_to_return["clean_text"], "spanish"
-   # )
-   # tweet_to_return["clean_stemmed_text"] = preProcessing.stem_text(
-   #     tweet_to_return["clean_text"]
-   # )
+    # tweet_to_return["clean_text"] = preProcessing.remove_stop(
+    #     tweet_to_return["clean_text"], "spanish"
+    # )
+    # tweet_to_return["clean_stemmed_text"] = preProcessing.stem_text(
+    #     tweet_to_return["clean_text"]
+    # )
     tweet_to_return["word_count"] = len(tweet_to_return["token_txt"])
 
     # Get the party of the user
