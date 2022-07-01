@@ -1,12 +1,5 @@
-import os
-import re
-import csv
-import json
-import shutil
 import logging
-import sqlite3
 import datetime
-import itertools
 
 import pytz
 import fasttext
@@ -15,7 +8,6 @@ import pandas as pd
 
 from tqdm import tqdm
 from dataPreprocessing import preProcessingText
-from dateutil.relativedelta import relativedelta
 
 logging.basicConfig(format="%(asctime)s %(message)s", level=logging.INFO)
 
@@ -39,16 +31,6 @@ def get_lang(txt, lang_model_path=None):
     except Exception as e:
         label, proba = None, None
     return label, proba
-
-
-def which_party(screen_name, dict_party):
-    """
-    Return the party that matches the screen_name
-    """
-    try:
-        return dict_party[screen_name]
-    except KeyError:
-        return None
 
 
 def process_tweet(tweet, lang_model=None):
@@ -124,9 +106,7 @@ def process_tweet(tweet, lang_model=None):
     # Check if the rt has not been set up as true earlier
     if tweet_to_return["rt_status"] is False:
         tweet_to_return["rt_status"] = remove_entities["rt_status"]
-    # with_acc = tweet["clean_text"]
     # tweet["clean_text"] = preProcessing.remove_accent(tweet["clean_text"])
-    # without_acc = tweet["clean_text"]
     if lang_model:
         tweet_to_return["lang_label"], tweet_to_return["lang_proba"] = get_lang(
             tweet_to_return["txt_wo_entities"], lang_model.predict
@@ -145,8 +125,6 @@ def process_tweet(tweet, lang_model=None):
     # )
     tweet_to_return["word_count"] = len(tweet_to_return["token_txt"])
 
-    # Get the party of the user
-    # tweet["party"] = which_party(tweet["screen_name"], dict_users_party)
     return tweet_to_return
 
 

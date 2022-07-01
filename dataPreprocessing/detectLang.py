@@ -3,6 +3,7 @@ Detect the lang of a text string and return the lang tag and the associated prob
 Use Fasttext
 """
 import fasttext
+import numpy as np
 
 lang_detector = fasttext.load_model(PRETRAINED_FASTTEXT_MODEL)
 
@@ -19,5 +20,6 @@ def get_lang(txt, lang_detector):
             proba = np.mean(proba)  # Get the mean of the proba as not interested in it
 
     except Exception as e:
+        print(e)
         label, proba = None, None
     return label, proba

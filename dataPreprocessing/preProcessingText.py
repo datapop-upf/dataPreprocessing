@@ -252,9 +252,9 @@ def preprocess_text(
         # remove entities and get the list of the removed object if need future parsing
         (
             sentence,
-            mentions_lists,
-            urls_lists,
-            hashtags_list,
+            mentions,
+            urls,
+            hashtags,
             rt_status,
         ) = remove_entities(
             sentence, remove_hashtag, remove_url, remove_mention, remove_rt
@@ -301,14 +301,14 @@ def main():
     print("Original Tweet")
     print(original_tweet)
 
-    process_tweet = preprocess_tweet(original_tweet)
+    process_tweet = preprocess_text(original_tweet)
     print("Preprocess tweet")
     print(process_tweet)
 
     second_tweet = "__MENTION__ __MENTION__ enserio cuando habeis dicho que los froot loops estan malos me ha dolido..."
     print("Original Tweet")
     print(second_tweet)
-    process_tweet = preprocess_tweet(second_tweet)
+    process_tweet = preprocess_text(second_tweet)
     print("Preprocess tweet")
     print(process_tweet)
 
